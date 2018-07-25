@@ -5,7 +5,7 @@ _Forked from fbora/tic-tac-GO_ZERO_
 
 Run ```interactive.py``` to play with bot
 
-Github won't allow me to upload files larger than 100m, so the tree files are being uploaded to my drive. Simply download ```mct``` folder and put it here. Link:(uploading)
+Github won't allow me to upload files larger than 100m, so the tree files are being uploaded to my drive (https://drive.google.com/drive/folders/1vE3MYp9PL4OJQtgGJCvPlA3P4ztNKWeP?usp=sharing). Simply download ```mct``` folder and put it here.
 
 
 I will add more details later.

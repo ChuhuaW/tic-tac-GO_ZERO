@@ -1,11 +1,12 @@
-__author__ = 'Florin Bora'
+#implementation structure is forked from fbora/tic-tac-GO_ZERO
+
 
 import os
 import numpy as np
 import tensorflow as tf
 
 def augment_data_set(data):
-    augmented_data = data.copy()
+    augmented_data = data[:]
     # rotations
     for game in reversed(augmented_data):
         for k in range(1, 4):
@@ -34,8 +35,8 @@ def update_nn_training_set(new_games, training_set):
             initial = game[0][i]
             final = game[0][i+1]
             move = np.abs((final-initial).ravel())
-            y = np.concatenate([one_hot_winner, move], axis=0).reshape(-1, 12)
-            x = initial.reshape(-1, 9)
+            y = np.concatenate([one_hot_winner, move], axis=0).reshape(-1, 28)
+            x = initial.reshape(-1, 25)
             if training_set is None:
                 training_set = [x, y]
             else:
@@ -58,11 +59,13 @@ def train_nn(train_data, iterations=1000):
     training_op_tf = sess.graph.get_tensor_by_name('training_op:0')
     loss_tf = sess.graph.get_tensor_by_name('loss:0')
     global_step_tf = sess.graph.get_tensor_by_name('global_step:0')
+    #print("global_steps:",global_step_tf)
     feed_dict = { X_tf:X, y_tf: y}
 
     for i in range(iterations):
         _, g_step, loss = sess.run([training_op_tf, global_step_tf, loss_tf], feed_dict=feed_dict)
         if g_step%500 == 0:
+            print("g_step:",g_step)
             print('training neural network: global_step={}, loss={}'.format(g_step, loss))
     saved_path = saver.save(sess, nn_predictor.CHECK_POINTS_NAME,
         global_step=g_step, write_meta_graph=False)
@@ -70,7 +73,7 @@ def train_nn(train_data, iterations=1000):
 
 
 class model_two_hidden():
-    def __init__(self, size_x=9, size_y=12):
+    def __init__(self, size_x=25, size_y=28):
         self.size_x = size_x
         self.size_y = size_y
         size_hidden_1 = size_x
@@ -137,9 +140,9 @@ class nn_predictor():
         self.y_tf = self.sess.graph.get_tensor_by_name('activation3:0')
 
     def predict(self, input):
-        input_np = input.reshape(-1, 9)
+        input_np = input.reshape(-1, 25)
         output_np = self.sess.run(self.y_tf, feed_dict={self.X_tf: input_np})
-        output_np = output_np.reshape(12)
+        output_np = output_np.reshape(28)
         return output_np[:3], output_np[3:]
 
     @classmethod

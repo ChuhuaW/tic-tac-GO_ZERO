@@ -1,4 +1,5 @@
-__author__ = 'Florin Bora'
+#implementation structure is forked from fbora/tic-tac-GO_ZERO
+
 
 import os
 import numpy as np
@@ -27,14 +28,15 @@ class Interactive_Player():
         board.display(clear=True)
         while True:
             human_answer = input('Enter move: row, column tuple (indexing starts at 0)')
+            human_answer = "("+str(human_answer)+")"
             move = [int(x) for x in human_answer if str.isdigit(x)]
             row, col = move[0], move[1]
             if len(move) != 2:
                 print ('Incorrect input, try again!')
                 continue
-            if len([x for x in move if x<0 or x>2])>0:
-                print('row and column index can have only values: 0, 1, 2')
-                continue
+            #if len([x for x in move if x<0 or x>2])>0:
+            #    print('row and column index can have only values: 0, 1, 2')
+            #    continue
             if board.board[row, col] != 0:
                 print('Incorrect move; cell must be empty!')
                 continue
@@ -53,7 +55,7 @@ class Zero_Player():
 
     def turn(self, board):
         if board.empty():
-            move_int = np.random.choice(range(9))
+            move_int = np.random.choice(range(25))
         else:
             illegal_moves = np.where(board.board.ravel()!=0)[0]
             pred_winner, prior_prob = self.nn_predictor.predict(board.board)
@@ -61,11 +63,18 @@ class Zero_Player():
             np.put(prior_prob, illegal_moves, 0)
 
             current_state = b.Board.arr2str(board.board)
-            possible_moves = [current_state+'2'+x for x in self.tree[current_state]]
+            #print("current states:",current_state)
+            if current_state not in self.tree:
+                generatePossibleStates(current_state, self.tree, self.edge_statistics)
+                possible_moves = [current_state+'2'+x for x in self.tree[current_state]]
+            #print('possible_moves:', possible_moves)
+            possible_moves = [current_state+'2'+x for x in self.tree[current_state]]            
             move_statistics = dict((k, self.edge_statistics[k]) for k in possible_moves)
             N = sum(v['N'] for v in move_statistics.values())
             for k in move_statistics.keys():
                 idx = b.Board.stringmove2int(k)
+                #print("idx:",idx)
+                #print("prior_prob:",prior_prob)
                 P = prior_prob[idx]
                 move_statistics[k]['P'] = P
                 move_statistics[k]['PUCT'] = mcts.MCTS.PUCT_function(N, move_statistics[k])
@@ -84,14 +93,37 @@ class Zero_Player():
             temp_adjusted_prob /= sum(temp_adjusted_prob)
             move_str = np.random.choice(m, p=temp_adjusted_prob)
             move_int = b.Board.stringmove2int(move_str)
-        row, col = divmod(move_int, 3)
+        row, col = divmod(move_int, 5)
         return self.type, row, col
 
 
+def generatePossibleStates(current_state,tree=None,stats=None):
+    #print(len(current_state))
+    edges = list()
+    possible_moves = [i for i in range(len(current_state)) if current_state[i] == ' ']
+    def f(i, p, m):
+        l = list(p)
+        l[i] = m
+        return l
+    children = set([''.join(f(x, current_state, 'x')) for x in possible_moves])
+    #print(type(children))
+    # print("children",children)
+    tree[current_state] = children
+    edges += [current_state+'2'+c for c in children]
+    edges = set(edges)
+    for k in edges:
+        #print(k)
+        if k not in stats:
+            stats[k] = {'N': 0, 'W': 0, 'D': 0, 'L': 0, 'Q': 0, 'P': 0}
+    return
+
+
 def main():
-    player = Random_Player('x', 'Random BOT')
-    board = b.Board()
-    move = player.turn(board)
+    print([' '*24+'x'])
+    #print(generatePossibleStates(" "*25,self.tree,))
+    #player = Random_Player('x', 'Random BOT')
+    #board = b.Board()
+    #move = player.turn(board)
 
 
 if __name__ == '__main__':

@@ -1,14 +1,16 @@
-__author__='Florin Bora'
+#implementation structure is forked from fbora/tic-tac-GO_ZERO
+
 
 import os
 import numpy as np
 import board
 import pickle
+import player
 
 class MCTS():
 
     MCTS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'mcts')
-    PUCT_CONSTANT = 10.0
+    PUCT_CONSTANT = 1.0
     TREE_FILE = 'tree.pkl'
     EDGES_FILE = 'edges.pkl'
     TREE_PATH = os.path.join(MCTS_DIR, TREE_FILE)
@@ -30,6 +32,7 @@ class MCTS():
                 os.remove(cls.EDGES_PATH)
         if not (os.path.isfile(cls.TREE_PATH) or os.path.isfile(cls.EDGES_PATH)):
             tree, edges = board.Board.generate_state_space()
+            #print(tree,edges)
             cls.save_tree_edges(tree, edges)
         else:
             tree, edges = cls.load_tree_edges()
@@ -55,16 +58,23 @@ class MCTS():
 
     @classmethod
     def update_mcts_edges(cls, new_games):
+        #print(new_games)
         tree, edges = cls.get_tree_and_edges()
         for game in new_games:
             for i in range(len(game[0])-1):
                 initial = game[0][i]
                 final = game[0][i+1]
                 move = (final-initial).sum()
+                current_state = board.Board.arr2str(initial)
+                player.generatePossibleStates(current_state,tree,edges)
                 edge = board.Board.arr2str(initial)+'2'+board.Board.arr2str(final)
+
+                #print(game[1])
+                #print(move)
                 win = game[1] * move
                 edges[edge]['N'] += 1
                 edges[edge][cls.WIN2DICT_MAP[win]] += 1
+                #print(cls.WIN2DICT_MAP[win])
                 action = (edges[edge]['W']-edges[edge]['L'])/edges[edge]['N']
                 edges[edge]['Q'] = action
         cls.save_tree_edges(tree, edges)

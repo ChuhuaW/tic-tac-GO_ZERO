@@ -1,0 +1,2 @@
+model_checkpoint_path: "/nfs/zapdos/home/data/vision3/cw234/tictactoe/tic-tac-GO_ZERO_5x5/nn_check_pts/nn-50000"
+all_model_checkpoint_paths: "/nfs/zapdos/home/data/vision3/cw234/tictactoe/tic-tac-GO_ZERO_5x5/nn_check_pts/nn-50000"

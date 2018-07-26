@@ -7,7 +7,7 @@ import mcts
 
 def interactive_game():
     mcts.MCTS.PUCT_CONSTANT = 0.33
-    global_step = 5000
+    global_step = 50000
     nn_check_pt = neural_network.nn_predictor.CHECK_POINTS_NAME + '-' + str(global_step)
     player1 = player.Zero_Player('x', 'Bot_ZERO', nn_type=nn_check_pt, temperature=0)
     player2 = player.Interactive_Player('o', 'Human')
